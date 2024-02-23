@@ -10,7 +10,7 @@ LDFLAGS = -lgtest -lgtest_main -lpthread -lexpat
 
 all : directories runtests
 
-runtests: $(BIN_DIR)/teststrutils  $(BIN_DIR)/teststrdatasource  $(BIN_DIR)/teststrdatasink  $(BIN_DIR)/testdsv  $(BIN_DIR)/testxml  $(BIN_DIR)/testosm $(BIN_DIR)/testcsvbs $(BIN_DIR)/testfiledatass $(BIN_DIR)/testcsvbsi $(BIN_DIR)/testkml
+runtests: $(BIN_DIR)/teststrutils  $(BIN_DIR)/teststrdatasource  $(BIN_DIR)/teststrdatasink  $(BIN_DIR)/testdsv  $(BIN_DIR)/testxml  $(BIN_DIR)/testosm $(BIN_DIR)/testcsvbs $(BIN_DIR)/testfiledatass $(BIN_DIR)/testcsvbsi $(BIN_DIR)/testkml $(BIN_DIR)/testdpr
 	$(BIN_DIR)/teststrutils
 	$(BIN_DIR)/teststrdatasource
 	$(BIN_DIR)/teststrdatasink
@@ -21,6 +21,7 @@ runtests: $(BIN_DIR)/teststrutils  $(BIN_DIR)/teststrdatasource  $(BIN_DIR)/test
 	$(BIN_DIR)/testcsvbs
 	$(BIN_DIR)/testfiledatass
 	$(BIN_DIR)/testcsvbsi
+	$(BIN_DIR)/testdpr
 	
 
 
@@ -55,13 +56,17 @@ $(BIN_DIR)/testkml: $(OBJ_DIR)/KMLWriter.o $(OBJ_DIR)/KMLTest.o $(OBJ_DIR)/Strin
 	$(CXX) -o $(BIN_DIR)/testkml $(CXXFLAGS) $(OBJ_DIR)/KMLWriter.o $(OBJ_DIR)/KMLTest.o $(OBJ_DIR)/StringUtils.o $(OBJ_DIR)/XMLWriter.o $(OBJ_DIR)/StringDataSource.o $(OBJ_DIR)/StringDataSink.o $(LDFLAGS)
 
 
+$(BIN_DIR)/testdpr: $(OBJ_DIR)/DijkstraPathRouter.o $(OBJ_DIR)/DijkstraPathRouterTest.o
+	$(CXX) -o $(BIN_DIR)/testdpr $(CXXFLAGS) $(OBJ_DIR)/DijkstraPathRouter.o $(OBJ_DIR)/DijkstraPathRouterTest.o $(LDFLAGS)
+
+
+
+
 $(OBJ_DIR)/StringUtils.o: $(SRC_DIR)/StringUtils.cpp  $(INC_DIR)/StringUtils.h
 	$(CXX) -o $(OBJ_DIR)/StringUtils.o -c $(CXXFLAGS) $(SRC_DIR)/StringUtils.cpp
 
 $(OBJ_DIR)/StringUtilsTest.o: $(TEST_SRC_DIR)/StringUtilsTest.cpp $(INC_DIR)/StringUtils.h
 	$(CXX) -o $(OBJ_DIR)/StringUtilsTest.o -c $(CXXFLAGS) $(TEST_SRC_DIR)/StringUtilsTest.cpp
-
-
 
 
 $(OBJ_DIR)/StringDataSource.o: $(SRC_DIR)/StringDataSource.cpp $(INC_DIR)/StringDataSource.h
@@ -152,6 +157,15 @@ $(OBJ_DIR)/KMLWriter.o: $(SRC_DIR)/KMLWriter.cpp $(INC_DIR)/KMLWriter.h  $(INC_D
 
 $(OBJ_DIR)/KMLTest.o: $(TEST_SRC_DIR)/KMLTest.cpp $(INC_DIR)/KMLWriter.h $(INC_DIR)/StringUtils.h $(INC_DIR)/StringDataSource.h $(INC_DIR)/XMLWriter.h $(INC_DIR)/StringDataSink.h
 	$(CXX) -o $(OBJ_DIR)/KMLTest.o -c $(CXXFLAGS) $(TEST_SRC_DIR)/KMLTest.cpp
+
+
+$(OBJ_DIR)/DijkstraPathRouter.o: $(SRC_DIR)/DijkstraPathRouter.cpp $(INC_DIR)/DijkstraPathRouter.h  
+	$(CXX) -o $(OBJ_DIR)/DijkstraPathRouter.o -c $(CXXFLAGS) $(SRC_DIR)/DijkstraPathRouter.cpp
+
+
+$(OBJ_DIR)/DijkstraPathRouterTest.o: $(TEST_SRC_DIR)/DijkstraPathRouterTest.cpp $(INC_DIR)/DijkstraPathRouter.h  
+	$(CXX) -o $(OBJ_DIR)/DijkstraPathRouterTest.o -c $(CXXFLAGS) $(TEST_SRC_DIR)/DijkstraPathRouterTest.cpp
+
 
 directories:
 	mkdir -p  $(OBJ_DIR)
