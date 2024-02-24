@@ -2,6 +2,8 @@
 #include "DijkstraPathRouter.h"
 
 CDijkstraPathRouter graph1;
+CDijkstraPathRouter graph2;
+
 
 TEST(CDijkstraPathRouter, test){
     EXPECT_EQ(graph1.AddVertex(std::string("v1")),0);
@@ -49,10 +51,71 @@ TEST(CDijkstraPathRouter, test){
     expected_path = {0,4};
     EXPECT_EQ(graph1.FindShortestPath(0, 4, path), 4);
     EXPECT_EQ(path, expected_path);
-
-
-
-
 }
 
+TEST(CDijkstraPathRouter, test2){ //have circle
+    EXPECT_EQ(graph2.AddVertex('a'),0);
+    EXPECT_EQ(graph2.AddVertex('b'),1);
+    EXPECT_EQ(graph2.AddVertex('c'),2);
+    EXPECT_EQ(graph2.AddVertex('d'),3);
+    EXPECT_EQ(graph2.AddVertex('e'),4);
+    EXPECT_EQ(graph2.AddVertex('f'),5);
+    EXPECT_EQ(graph2.AddVertex('g'),6);
+
+    EXPECT_EQ(graph2.VertexCount(),7);
+    
+    EXPECT_EQ(std::any_cast<char>(graph2.GetVertexTag(0)), 'a');
+    EXPECT_EQ(std::any_cast<char>(graph2.GetVertexTag(1)), 'b');
+    EXPECT_EQ(std::any_cast<char>(graph2.GetVertexTag(2)), 'c');
+    EXPECT_EQ(std::any_cast<char>(graph2.GetVertexTag(3)), 'd');
+    EXPECT_EQ(std::any_cast<char>(graph2.GetVertexTag(4)), 'e');
+    EXPECT_EQ(std::any_cast<char>(graph2.GetVertexTag(5)), 'f');
+    EXPECT_EQ(std::any_cast<char>(graph2.GetVertexTag(6)), 'g');
+    std::any invalid = graph2.GetVertexTag(7);//bad case
+    EXPECT_FALSE(invalid.has_value());
+
+
+    EXPECT_TRUE(graph2.AddEdge(0,1,15));
+    EXPECT_TRUE(graph2.AddEdge(0,2,2));
+    EXPECT_TRUE(graph2.AddEdge(0,3,12));
+    EXPECT_TRUE(graph2.AddEdge(1,4,6));
+    EXPECT_TRUE(graph2.AddEdge(2,4,8));
+    EXPECT_TRUE(graph2.AddEdge(2,5,4));
+    EXPECT_TRUE(graph2.AddEdge(3,6,3));
+    EXPECT_TRUE(graph2.AddEdge(4,6,9));
+    EXPECT_TRUE(graph2.AddEdge(5,6,10));
+    EXPECT_TRUE(graph2.AddEdge(5,3,5));
+    EXPECT_TRUE(graph2.AddEdge(6,1,4));
+
+    EXPECT_FALSE(graph2.AddEdge(100,1,4));//SRC NOT EXIST
+    EXPECT_FALSE(graph2.AddEdge(1,9,4));//DEST NOT EXIST
+    EXPECT_FALSE(graph2.AddEdge(1,3,-4));//NEGATIVE WEIGHT
+
+
+    std::vector<CDijkstraPathRouter::TVertexID> path;
+    std::vector<CDijkstraPathRouter::TVertexID> expected_path = {0, 1};
+    EXPECT_EQ(graph2.FindShortestPath(0, 1, path), 15);
+    EXPECT_EQ(path, expected_path);
+
+    expected_path = {0, 2};
+    EXPECT_EQ(graph2.FindShortestPath(0, 2, path), 2);
+    EXPECT_EQ(path, expected_path);
+
+    expected_path = {0,2,5,3};
+    EXPECT_EQ(graph2.FindShortestPath(0, 3, path), 11);
+    EXPECT_EQ(path, expected_path);
+
+    expected_path = {0,2,4};
+    EXPECT_EQ(graph2.FindShortestPath(0, 4, path), 10);
+    EXPECT_EQ(path, expected_path);
+
+    expected_path = {0,2,5};
+    EXPECT_EQ(graph2.FindShortestPath(0, 5, path), 6);
+    EXPECT_EQ(path, expected_path);
+
+    expected_path = {0,2,5,3,6};
+    EXPECT_EQ(graph2.FindShortestPath(0, 6, path), 14);
+    EXPECT_EQ(path, expected_path);
+
+}
 

@@ -10,7 +10,7 @@ LDFLAGS = -lgtest -lgtest_main -lpthread -lexpat
 
 all : directories runtests
 
-runtests: $(BIN_DIR)/teststrutils  $(BIN_DIR)/teststrdatasource  $(BIN_DIR)/teststrdatasink  $(BIN_DIR)/testdsv  $(BIN_DIR)/testxml  $(BIN_DIR)/testosm $(BIN_DIR)/testcsvbs $(BIN_DIR)/testfiledatass $(BIN_DIR)/testcsvbsi $(BIN_DIR)/testkml $(BIN_DIR)/testdpr
+runtests: $(BIN_DIR)/teststrutils  $(BIN_DIR)/teststrdatasource  $(BIN_DIR)/teststrdatasink  $(BIN_DIR)/testdsv  $(BIN_DIR)/testxml  $(BIN_DIR)/testosm $(BIN_DIR)/testcsvbs $(BIN_DIR)/testfiledatass $(BIN_DIR)/testcsvbsi $(BIN_DIR)/testkml $(BIN_DIR)/testdpr $(BIN_DIR)/testtp
 	$(BIN_DIR)/teststrutils
 	$(BIN_DIR)/teststrdatasource
 	$(BIN_DIR)/teststrdatasink
@@ -22,6 +22,7 @@ runtests: $(BIN_DIR)/teststrutils  $(BIN_DIR)/teststrdatasource  $(BIN_DIR)/test
 	$(BIN_DIR)/testfiledatass
 	$(BIN_DIR)/testcsvbsi
 	$(BIN_DIR)/testdpr
+	$(BIN_DIR)/testtp
 	
 
 
@@ -59,7 +60,8 @@ $(BIN_DIR)/testkml: $(OBJ_DIR)/KMLWriter.o $(OBJ_DIR)/KMLTest.o $(OBJ_DIR)/Strin
 $(BIN_DIR)/testdpr: $(OBJ_DIR)/DijkstraPathRouter.o $(OBJ_DIR)/DijkstraPathRouterTest.o
 	$(CXX) -o $(BIN_DIR)/testdpr $(CXXFLAGS) $(OBJ_DIR)/DijkstraPathRouter.o $(OBJ_DIR)/DijkstraPathRouterTest.o $(LDFLAGS)
 
-
+$(BIN_DIR)/testtp: $(OBJ_DIR)/StringUtils.o $(OBJ_DIR)/DSVReader.o $(OBJ_DIR)/XMLReader.o $(OBJ_DIR)/StringDataSource.o $(OBJ_DIR)/OpenStreetMap.o $(OBJ_DIR)/CSVBusSystem.o $(OBJ_DIR)/DijkstraTransportationPlanner.o $(OBJ_DIR)/CSVOSMTransportationPlannerTest.o  $(OBJ_DIR)/DijkstraPathRouter.o $(OBJ_DIR)/GeographicUtils.o
+	$(CXX) -o $(BIN_DIR)/testtp $(CXXFLAGS) $(OBJ_DIR)/StringUtils.o $(OBJ_DIR)/DSVReader.o $(OBJ_DIR)/XMLReader.o $(OBJ_DIR)/StringDataSource.o $(OBJ_DIR)/OpenStreetMap.o $(OBJ_DIR)/CSVBusSystem.o $(OBJ_DIR)/DijkstraTransportationPlanner.o $(OBJ_DIR)/CSVOSMTransportationPlannerTest.o  $(OBJ_DIR)/DijkstraPathRouter.o $(OBJ_DIR)/GeographicUtils.o $(LDFLAGS)
 
 
 $(OBJ_DIR)/StringUtils.o: $(SRC_DIR)/StringUtils.cpp  $(INC_DIR)/StringUtils.h
@@ -166,6 +168,17 @@ $(OBJ_DIR)/DijkstraPathRouter.o: $(SRC_DIR)/DijkstraPathRouter.cpp $(INC_DIR)/Di
 $(OBJ_DIR)/DijkstraPathRouterTest.o: $(TEST_SRC_DIR)/DijkstraPathRouterTest.cpp $(INC_DIR)/DijkstraPathRouter.h  
 	$(CXX) -o $(OBJ_DIR)/DijkstraPathRouterTest.o -c $(CXXFLAGS) $(TEST_SRC_DIR)/DijkstraPathRouterTest.cpp
 
+
+$(OBJ_DIR)/GeographicUtils.o: $(SRC_DIR)/GeographicUtils.cpp $(INC_DIR)/GeographicUtils.h  
+	$(CXX) -o $(OBJ_DIR)/GeographicUtils.o -c $(CXXFLAGS) $(SRC_DIR)/GeographicUtils.cpp
+
+
+$(OBJ_DIR)/DijkstraTransportationPlanner.o: $(SRC_DIR)/DijkstraTransportationPlanner.cpp $(INC_DIR)/DijkstraTransportationPlanner.h  
+	$(CXX) -o $(OBJ_DIR)/DijkstraTransportationPlanner.o -c $(CXXFLAGS) $(SRC_DIR)/DijkstraTransportationPlanner.cpp
+
+
+$(OBJ_DIR)/CSVOSMTransportationPlannerTest.o: $(TEST_SRC_DIR)/CSVOSMTransportationPlannerTest.cpp $(INC_DIR)/XMLReader.h $(INC_DIR)/StringUtils.h $(INC_DIR)/StringDataSource.h $(INC_DIR)/OpenStreetMap.h $(INC_DIR)/CSVBusSystem.h $(INC_DIR)/DijkstraTransportationPlanner.h $(INC_DIR)/GeographicUtils.h $(INC_DIR)/TransportationPlannerConfig.h
+	$(CXX) -o $(OBJ_DIR)/CSVOSMTransportationPlannerTest.o -c $(CXXFLAGS) $(TEST_SRC_DIR)/CSVOSMTransportationPlannerTest.cpp
 
 directories:
 	mkdir -p  $(OBJ_DIR)
