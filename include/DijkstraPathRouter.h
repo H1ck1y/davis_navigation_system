@@ -12,11 +12,11 @@ class CDijkstraPathRouter : public CPathRouter{
         CDijkstraPathRouter();
         ~CDijkstraPathRouter();
 
-        std::size_t VertexCount() const noexcept;
-        TVertexID AddVertex(std::any tag) noexcept;
-        std::any GetVertexTag(TVertexID id) const noexcept;
-        bool AddEdge(TVertexID src, TVertexID dest, double weight, bool bidir = false) noexcept;
-        bool Precompute(std::chrono::steady_clock::time_point deadline) noexcept;
+        std::size_t VertexCount() const noexcept ;
+        TVertexID AddVertex(std::any tag) noexcept ;
+        std::any GetVertexTag(TVertexID id) const noexcept ;
+        bool AddEdge(TVertexID src, TVertexID dest, double weight, bool bidir = false) noexcept ;
+        bool Precompute(std::chrono::steady_clock::time_point deadline) noexcept ;
         double FindShortestPath(TVertexID src, TVertexID dest, std::vector<TVertexID> &path) noexcept;
 };
 

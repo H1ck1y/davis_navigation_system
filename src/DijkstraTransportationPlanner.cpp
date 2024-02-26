@@ -1,13 +1,16 @@
 #include "DijkstraTransportationPlanner.h"
 #include <algorithm>
+#include "GeographicUtils.h"
+#include "iostream"
+#include "DijkstraPathRouter.h"
 
 
 struct CDijkstraTransportationPlanner::SImplementation{
     std::shared_ptr<SConfiguration> config;
     std::shared_ptr<CStreetMap> streetmap;
-    std::shared_ptr<CBusSystem> bussystem;
-    std::shared_ptr<CPathRouter> pathrouter;
+    std::shared_ptr<CBusSystem> bussystem;    
     std::vector <std::shared_ptr<CStreetMap::SNode>> orderednodes;
+    std::shared_ptr<CPathRouter> pathrouter = std::make_shared<CDijkstraPathRouter>();
 
     
     std::size_t NodeCount()const noexcept{
@@ -22,14 +25,46 @@ struct CDijkstraTransportationPlanner::SImplementation{
                 return stop;
     }
 
+    int searchforindex(std::vector <std::shared_ptr<CStreetMap::SNode>> orderednodes, TNodeID id){
+        for (int i = 0; i < orderednodes.size(); i++){
+            if(orderednodes[i] ->ID() == id){
+                return i;
+            }
+        }
+    }
 
    double FindShortestPath(TNodeID src, TNodeID dest, std::vector< TNodeID > &path){
-         //第一步 你要加点 用addvertex,参数any 就应该是nodestruct 这时候会返回vertexid, 每一个vertexid 对应一个 nodestruct nodestruct里又有nodeid
-         //然后你要根据waystruct 里的信息 addedge 肯定是要用循环 way 不是有node吗 
-         //然后你要考虑那个way属性 是单边还是双边 如果是双边 你得被addedge里 bi 参数打开 你看一下 讲义里的很多assumption
-         //*** 这个时候图差不多就构造好了但是findshortespath返回的是vertexid 不是nodeid 等于说你得把vector里的东西转换回去 用gettag,得到那个节点 然后 节点->nodeid(),然后塞进这个path里
-         //vertexid 就是按你插入顺序 第一个是0 第二个是1
-        return pathrouter->FindShortestPath(src,dest,path);
+        bool bi = false;
+        if(streetmap->NodeCount() == 0 || streetmap->WayCount() == 0){
+            return CPathRouter::NoPathExists;
+        }
+        for (int i = 0; i< orderednodes.size(); i++){
+            std::cout << "Ordered Node ID: " << orderednodes[i]->ID() << std::endl;
+            pathrouter->AddVertex(orderednodes[i]);
+            
+        }
+        for (int i = 0; i< streetmap ->WayCount();i++){
+            if (streetmap->WayByIndex(i)->HasAttribute("oneway") && streetmap->WayByIndex(i)-> GetAttribute("oneway") == "no"){
+                bi = true;
+            }
+            for (int j = 0; j< streetmap->WayByIndex(i)->NodeCount()-1; j++){
+                TNodeID srcnodeid = streetmap -> WayByIndex(i)->GetNodeID(j);
+                int srcvertexid = searchforindex(orderednodes,srcnodeid);
+                std::cout << "srcvertexID: " << srcvertexid << std::endl;
+                TNodeID destnodeid = streetmap -> WayByIndex(i)->GetNodeID(j+1);
+                int destvertexid = searchforindex(orderednodes,destnodeid);
+                 std::cout << "destvertexID: " << destvertexid << std::endl;
+                double distance = SGeographicUtils::HaversineDistanceInMiles(streetmap->NodeByID(srcnodeid)->Location(),streetmap->NodeByID(destnodeid)->Location());
+                pathrouter->AddEdge(srcvertexid ,destvertexid, distance, bi);
+            }
+        }
+        int srctarget =  searchforindex(orderednodes,src);
+        int destarget =  searchforindex(orderednodes,dest);
+        double result = pathrouter->FindShortestPath(srctarget, destarget, path);
+        for (int i =0; i < orderednodes.size(); i++){
+            path[i] = orderednodes[i]->ID();
+        }
+        return result;
    }
 
 };
@@ -74,7 +109,7 @@ std::shared_ptr<CStreetMap::SNode> CDijkstraTransportationPlanner::SortedNodeByI
 
 
 double CDijkstraTransportationPlanner::FindShortestPath(TNodeID src, TNodeID dest, std::vector< TNodeID > &path){
-
+    return DImplementation->FindShortestPath(src,dest,path);
 }
 
 double CDijkstraTransportationPlanner::FindFastestPath(TNodeID src, TNodeID dest, std::vector< TTripStep > &path){

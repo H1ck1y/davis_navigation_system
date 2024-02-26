@@ -120,6 +120,7 @@ bool CDijkstraPathRouter::AddEdge(CDijkstraPathRouter::TVertexID src, CDijkstraP
 }
         
 bool CDijkstraPathRouter::Precompute(std::chrono::steady_clock::time_point deadline) noexcept{
+        return true;
 
 }
 
