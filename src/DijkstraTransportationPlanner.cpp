@@ -1,5 +1,6 @@
 #include "DijkstraTransportationPlanner.h"
 #include <algorithm>
+#include <vector>
 #include "GeographicUtils.h"
 #include "iostream"
 #include "DijkstraPathRouter.h"
@@ -33,39 +34,59 @@ struct CDijkstraTransportationPlanner::SImplementation{
         }
     }
 
-   double FindShortestPath(TNodeID src, TNodeID dest, std::vector< TNodeID > &path){
-        bool bi = false;
-        if(streetmap->NodeCount() == 0 || streetmap->WayCount() == 0){
-            return CPathRouter::NoPathExists;
-        }
+    void build_graph(){
+        std::vector<int> srcVertexIds;
+        std::vector<int> destVertexIds;
+        std::vector<double> distances;
+        std::vector<bool> biDirectionals;
         for (int i = 0; i< orderednodes.size(); i++){
-            std::cout << "Ordered Node ID: " << orderednodes[i]->ID() << std::endl;
-            pathrouter->AddVertex(orderednodes[i]);
+                pathrouter->AddVertex(orderednodes[i]);
             
         }
+        std::cout << "test: " << std::endl;
+     
         for (int i = 0; i< streetmap ->WayCount();i++){
-            if (streetmap->WayByIndex(i)->HasAttribute("oneway") && streetmap->WayByIndex(i)-> GetAttribute("oneway") == "no"){
-                bi = true;
+            bool bi = true;
+            if (streetmap->WayByIndex(i)->HasAttribute("oneway") && streetmap->WayByIndex(i)-> GetAttribute("oneway") == "yes"){
+                bi = false;
             }
             for (int j = 0; j< streetmap->WayByIndex(i)->NodeCount()-1; j++){
                 TNodeID srcnodeid = streetmap -> WayByIndex(i)->GetNodeID(j);
                 int srcvertexid = searchforindex(orderednodes,srcnodeid);
-                std::cout << "srcvertexID: " << srcvertexid << std::endl;
+                
                 TNodeID destnodeid = streetmap -> WayByIndex(i)->GetNodeID(j+1);
                 int destvertexid = searchforindex(orderednodes,destnodeid);
-                 std::cout << "destvertexID: " << destvertexid << std::endl;
                 double distance = SGeographicUtils::HaversineDistanceInMiles(streetmap->NodeByID(srcnodeid)->Location(),streetmap->NodeByID(destnodeid)->Location());
+                std::cout << "srcvertexid: " << srcvertexid << ", destvertexid: " << destvertexid << std::endl;
+                std::cout <<"flag " << bi << std::endl;
                 pathrouter->AddEdge(srcvertexid ,destvertexid, distance, bi);
             }
+        }
+
+    }
+
+    double FindShortestPath(TNodeID src, TNodeID dest, std::vector< TNodeID > &path){
+        path.clear();
+        std::vector<TNodeID> tempPath; 
+        if(streetmap->NodeCount() == 0 || streetmap->WayCount() == 0){
+            return CPathRouter::NoPathExists;
         }
         int srctarget =  searchforindex(orderednodes,src);
         int destarget =  searchforindex(orderednodes,dest);
         double result = pathrouter->FindShortestPath(srctarget, destarget, path);
-        for (int i =0; i < orderednodes.size(); i++){
-            path[i] = orderednodes[i]->ID();
+        
+        for (auto index : path) {
+            tempPath.push_back(orderednodes[index]->ID());
         }
+        path = tempPath;
         return result;
    }
+
+
+
+    double FindFastestPath(TNodeID src, TNodeID dest, std::vector< TTripStep > &path){
+        
+    }
 
 };
 
@@ -84,6 +105,8 @@ CDijkstraTransportationPlanner::CDijkstraTransportationPlanner(std::shared_ptr<S
     [](const std::shared_ptr<CStreetMap::SNode>& a, const std::shared_ptr<CStreetMap::SNode>& b) {
             return a->ID() < b->ID();
         });
+
+    DImplementation->build_graph();
 
 }
 
@@ -113,7 +136,7 @@ double CDijkstraTransportationPlanner::FindShortestPath(TNodeID src, TNodeID des
 }
 
 double CDijkstraTransportationPlanner::FindFastestPath(TNodeID src, TNodeID dest, std::vector< TTripStep > &path){
-
+    return DImplementation->FindFastestPath(src,dest,path);
 }
 
 bool CDijkstraTransportationPlanner::GetPathDescription(const std::vector< TTripStep > &path, std::vector< std::string > &desc) const{

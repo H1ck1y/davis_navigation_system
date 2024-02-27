@@ -3,7 +3,7 @@
 
 CDijkstraPathRouter graph1;
 CDijkstraPathRouter graph2;
-
+CDijkstraPathRouter graph3;
 
 TEST(CDijkstraPathRouter, test){
     EXPECT_EQ(graph1.AddVertex(std::string("v1")),0);
@@ -119,3 +119,23 @@ TEST(CDijkstraPathRouter, test2){ //have circle
 
 }
 
+
+TEST(CDijkstraPathRouter, test3){
+    EXPECT_EQ(graph3.AddVertex(std::string("v1")),0);
+    EXPECT_EQ(graph3.AddVertex(std::string("v2")),1);
+    EXPECT_EQ(graph3.AddVertex(std::string("v3")),2);
+    EXPECT_EQ(graph3.AddVertex(std::string("v4")),3);
+    EXPECT_TRUE(graph3.AddEdge(0,1,15,true));
+    EXPECT_TRUE(graph3.AddEdge(1,2,10,true));
+    EXPECT_TRUE(graph3.AddEdge(2,3,10,true));
+    EXPECT_TRUE(graph3.AddEdge(3,0,7,true));
+    std::vector<CDijkstraPathRouter::TVertexID> path;
+    std::vector<CDijkstraPathRouter::TVertexID> expected_path = {0, 3};
+    EXPECT_EQ(graph3.FindShortestPath(0, 3, path), 7);
+    EXPECT_EQ(path, expected_path);
+    EXPECT_EQ(graph3.FindShortestPath(1, 0, path), 15);
+    expected_path = {1, 0};
+    EXPECT_EQ(path, expected_path);
+
+
+}
