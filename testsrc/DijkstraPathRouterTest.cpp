@@ -136,6 +136,9 @@ TEST(CDijkstraPathRouter, test3){
     EXPECT_EQ(graph3.FindShortestPath(1, 0, path), 15);
     expected_path = {1, 0};
     EXPECT_EQ(path, expected_path);
+    EXPECT_EQ(graph3.FindShortestPath(1, 1, path), 0);
+    expected_path = {1};
+    EXPECT_EQ(path, expected_path);
 
 
 }

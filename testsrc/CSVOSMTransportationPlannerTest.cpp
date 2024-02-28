@@ -8,7 +8,7 @@
 #include "DijkstraTransportationPlanner.h"
 #include "GeographicUtils.h"
 
-/*TEST(CSVOSMTransporationPlanner, SimpleTest){
+TEST(CSVOSMTransporationPlanner, SimpleTest){
     auto InStreamOSM = std::make_shared<CStringDataSource>( "<?xml version='1.0' encoding='UTF-8'?>"
                                                             "<osm version=\"0.6\" generator=\"osmconvert 0.8.5\">"
                                                             "</osm>");
@@ -22,10 +22,10 @@
     auto Config = std::make_shared<STransportationPlannerConfig>(StreetMap,BusSystem);
     CDijkstraTransportationPlanner Planner(Config);
     std::vector< CTransportationPlanner::TNodeID > ShortestPath;
-    //std::vector< CTransportationPlanner::TTripStep > FastestPath;
+    std::vector< CTransportationPlanner::TTripStep > FastestPath;
     EXPECT_EQ(Planner.FindShortestPath(0,1,ShortestPath),CPathRouter::NoPathExists);
-    //EXPECT_EQ(Planner.FindFastestPath(0,1,FastestPath),CPathRouter::NoPathExists);
-}*/
+    EXPECT_EQ(Planner.FindFastestPath(0,1,FastestPath),CPathRouter::NoPathExists);
+}
 
 TEST(CSVOSMTransporationPlanner, SortedNodeTest){
     auto InStreamOSM = std::make_shared<CStringDataSource>( "<?xml version='1.0' encoding='UTF-8'?>"
@@ -163,7 +163,7 @@ TEST(CSVOSMTransporationPlanner, FastestPathTest){
     double ExpectedBusDistance = SGeographicUtils::HaversineDistanceInMiles(std::make_pair(38.5,-121.7),std::make_pair(38.6,-121.7)) + 
                                 SGeographicUtils::HaversineDistanceInMiles(std::make_pair(38.6,-121.7),std::make_pair(38.6,-121.8));
     double ExpectedBusTime = ExpectedBusDistance / 20.0 + (60.0 / 3600.0);
-    EXPECT_EQ(Planner.FindFastestPath(1,3,BusFastestPath),ExpectedBusTime);
+    EXPECT_DOUBLE_EQ(Planner.FindFastestPath(1,3,BusFastestPath),ExpectedBusTime);
     EXPECT_EQ(BusFastestPath,ExpectedBusFastestPath);
     std::vector< CTransportationPlanner::TTripStep > BikeFastestPath, ExpectedBikeFastestPath = {{CTransportationPlanner::ETransportationMode::Bike,1},
                                                                                         {CTransportationPlanner::ETransportationMode::Bike,4}};
