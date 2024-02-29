@@ -5,6 +5,7 @@
 #include "iostream"
 #include "DijkstraPathRouter.h"
 #include "BusSystemIndexer.h"
+#include <unordered_map>
 #include <climits> 
 #include <utility>
 #include <limits>
@@ -15,9 +16,10 @@ struct CDijkstraTransportationPlanner::SImplementation{
     std::shared_ptr<SConfiguration> config;
     std::shared_ptr<CStreetMap> streetmap;
     std::shared_ptr<CBusSystem> bussystem;    
-    std::vector <std::shared_ptr<CStreetMap::SNode>> orderednodes;
-    std::vector<std::shared_ptr<CBusSystem::SStop>> stops;
-    std::vector<TNodeID> stopsinnodeid;
+    std::vector <std::shared_ptr<CStreetMap::SNode>> orderednodes; 
+    std::unordered_map<TNodeID, int>  bikestop; //use for bike_pathrouter
+    std::unordered_map<TNodeID, int> stopsinnodeid; // useforbus
+    std::unordered_map<TNodeID, int>  pathroutermap; // usefor basicgraph
     std::shared_ptr<CPathRouter> pathrouter = std::make_shared<CDijkstraPathRouter>();
     std::shared_ptr<CPathRouter> buspathrouter = std::make_shared<CDijkstraPathRouter>();
     std::shared_ptr<CPathRouter> bikepathrouter = std::make_shared<CDijkstraPathRouter>();
@@ -26,7 +28,7 @@ struct CDijkstraTransportationPlanner::SImplementation{
     double defaultwalkspeed;
     double busstoptime ;
     double defaultbusspeed ;
-    std::vector<TNodeID> bikestop;
+    
 
     
     std::size_t NodeCount()const noexcept{
@@ -41,37 +43,22 @@ struct CDijkstraTransportationPlanner::SImplementation{
                 return stop;
     }
 
-    int searchforindex(std::vector <std::shared_ptr<CStreetMap::SNode>> orderednodes, TNodeID id){
-        for (int i = 0; i < orderednodes.size(); i++){
-            if(orderednodes[i] ->ID() == id){
-                return i;
-            }
-        }
-        return -1;
-    }
 
-    int searchforindexbus(std::vector <std::shared_ptr<CBusSystem::SStop>> stops, TNodeID id){
-        for (int i = 0; i < stops.size(); i++){
-            if(stops[i] ->NodeID() == id){
-                return i;
-            }
+    int searchforindex(std::unordered_map <TNodeID, int>& map, TNodeID id){
+        auto it = map.find(id);
+        if (it != map.end()) {
+            return it->second; 
         }
-        return -1;
+        return -1; 
     }
 
 
-    int searchforindexbike(std::vector<TNodeID> bike, TNodeID id){
-        for (int i = 0; i < bike.size(); i++){
-            if(bike[i] == id){
-                return i;
-            }
-        }
-        return -1;
-    }
+
 
     void checkuniquebikenode(TNodeID node) {
-        if (std::find(bikestop.begin(), bikestop.end(), node) == bikestop.end()) {
-            bikestop.push_back(node);
+        if (bikestop.find(node) == bikestop.end()) {
+            int newIndex = bikestop.size(); 
+            bikestop[node] = newIndex; 
         }
     }
 
@@ -87,8 +74,8 @@ struct CDijkstraTransportationPlanner::SImplementation{
                 checkuniquebikenode(nodeID); // Check and add node if unique
             }
         }
-        for (TNodeID nodeID : bikestop) {
-            bikepathrouter->AddVertex(streetmap->NodeByID(nodeID)); //successfully add bikenodes into the vectors
+        for (auto pair : bikestop) {
+            bikepathrouter->AddVertex(streetmap->NodeByID(pair.first)); //successfully add bikenodes into the vectors
         }
 
 
@@ -102,9 +89,9 @@ struct CDijkstraTransportationPlanner::SImplementation{
             }
             for (int j = 0; j< streetmap->WayByIndex(i)->NodeCount()-1; j++){
                 TNodeID srcnodeid = streetmap -> WayByIndex(i)->GetNodeID(j);
-                int srcvertexid = searchforindexbike(bikestop,srcnodeid);
+                int srcvertexid = searchforindex(bikestop,srcnodeid);
                 TNodeID destnodeid = streetmap -> WayByIndex(i)->GetNodeID(j+1);
-                int destvertexid = searchforindexbike(bikestop,destnodeid);
+                int destvertexid = searchforindex(bikestop,destnodeid);
                 double distance = SGeographicUtils::HaversineDistanceInMiles(streetmap->NodeByID(srcnodeid)->Location(),streetmap->NodeByID(destnodeid)->Location());
                 //std::cout<< "bikesrcvertexid " << srcvertexid <<std::endl;
                 //std::cout<< "bikedestvertexid " << destvertexid <<std::endl;
@@ -115,21 +102,20 @@ struct CDijkstraTransportationPlanner::SImplementation{
     }
 
     void build_busgraph(){
-        for(int i = 0; i< bushelper->StopCount(); i++){ //push all the stops node into vectors
-            stops.push_back(bushelper->SortedStopByIndex(i));//stops for recording bus reflex <-> vertexid
-            stopsinnodeid.push_back(bushelper->SortedStopByIndex(i)->NodeID());//store the bus stop in node id
-            buspathrouter->AddVertex(bushelper-> SortedStopByIndex(i)); //add vertex into bus router
-            
+       for(int i = 0; i< bushelper->StopCount(); i++){ 
+            auto stop = bushelper->SortedStopByIndex(i);
+            stopsinnodeid[stop->NodeID()] = i; 
+            buspathrouter->AddVertex(stop); 
         }
 
         for(int i=0 ; i< bushelper-> RouteCount();i++){
             for (int j=0 ; j<bushelper->SortedRouteByIndex(i)->StopCount()-1;j++){
                 TNodeID stopid = bushelper->SortedRouteByIndex(i)->GetStopID(j);//this is stopid
                 auto  stopstruct = bussystem->StopByID(stopid);// find stopstruct
-                int srcindex = searchforindexbus(stops, stopstruct->NodeID());// find corresspoiding vertexid 
+                int srcindex = searchforindex(stopsinnodeid, stopstruct->NodeID());// find corresspoiding vertexid 
                 TNodeID stopid2 = bushelper->SortedRouteByIndex(i)->GetStopID(j+1);
                 auto  stopstruct2 = bussystem->StopByID(stopid2);
-                int destindex = searchforindexbus(stops, stopstruct2->NodeID());
+                int destindex = searchforindex(stopsinnodeid, stopstruct2->NodeID());
                 double distance = SGeographicUtils::HaversineDistanceInMiles(streetmap->NodeByID(stopstruct->NodeID())->Location(),streetmap->NodeByID(stopstruct2->NodeID())->Location());//calculate distance
                 buspathrouter->AddEdge(srcindex,destindex,distance);// add edge
             }
@@ -145,6 +131,7 @@ struct CDijkstraTransportationPlanner::SImplementation{
         std::vector<bool> biDirectionals;
         for (int i = 0; i< orderednodes.size(); i++){
                 pathrouter->AddVertex(orderednodes[i]);
+                pathroutermap[orderednodes[i]->ID()] = i;
             
         }  
         for (int i = 0; i< streetmap ->WayCount();i++){
@@ -154,15 +141,24 @@ struct CDijkstraTransportationPlanner::SImplementation{
             }
             for (int j = 0; j< streetmap->WayByIndex(i)->NodeCount()-1; j++){
                 TNodeID srcnodeid = streetmap -> WayByIndex(i)->GetNodeID(j);
-                int srcvertexid = searchforindex(orderednodes,srcnodeid);
+                int srcvertexid = searchforindex(pathroutermap,srcnodeid);
                 
                 TNodeID destnodeid = streetmap -> WayByIndex(i)->GetNodeID(j+1);
-                int destvertexid = searchforindex(orderednodes,destnodeid);
+                int destvertexid = searchforindex(pathroutermap,destnodeid);
                 double distance = SGeographicUtils::HaversineDistanceInMiles(streetmap->NodeByID(srcnodeid)->Location(),streetmap->NodeByID(destnodeid)->Location());
                 pathrouter->AddEdge(srcvertexid ,destvertexid, distance, bi);
             }
         }
 
+    }
+
+    TNodeID findKeyByValue(const std::unordered_map<TNodeID, int>& map, int value) {
+        for (const auto& pair : map) {
+            if (pair.second == value) {
+                return pair.first;
+            }
+        }
+        return -1; 
     }
 
     double FindShortestPath(TNodeID src, TNodeID dest, std::vector< TNodeID > &path){
@@ -171,8 +167,8 @@ struct CDijkstraTransportationPlanner::SImplementation{
         if(streetmap->NodeCount() == 0 || streetmap->WayCount() == 0){
             return CPathRouter::NoPathExists;
         }
-        int srctarget =  searchforindex(orderednodes,src);
-        int destarget =  searchforindex(orderednodes,dest);
+        int srctarget =  searchforindex(pathroutermap,src);
+        int destarget =  searchforindex(pathroutermap,dest);
         double result = pathrouter->FindShortestPath(srctarget, destarget, path);
         
         for (auto index : path) {
@@ -185,12 +181,12 @@ struct CDijkstraTransportationPlanner::SImplementation{
     double FindShortestBusPath(TNodeID src, TNodeID dest, std::vector< TNodeID > &path2){
         path2.clear();
         std::vector<TNodeID> tempPath; 
-        int srctarget =  searchforindexbus(stops,src);
-        int destarget =  searchforindexbus(stops,dest);
+        int srctarget =  searchforindex(stopsinnodeid,src);
+        int destarget =  searchforindex(stopsinnodeid,dest);
         double result =  buspathrouter->FindShortestPath(srctarget, destarget, path2);
         
         for (auto index : path2) {
-            tempPath.push_back(stops[index]->NodeID());
+            tempPath.push_back(findKeyByValue(stopsinnodeid,index));
         }
         path2 = tempPath;
         return result;
@@ -199,26 +195,26 @@ struct CDijkstraTransportationPlanner::SImplementation{
     double FindShortestBikePath(TNodeID src, TNodeID dest, std::vector< TNodeID > &path3){
         path3.clear();
         std::vector<TNodeID> tempPath; 
-        int srctarget =  searchforindexbike(bikestop,src);
+        int srctarget =  searchforindex(bikestop,src);
         //std::cout << "srctarget" << srctarget << std::endl;
-        int destarget =  searchforindexbike(bikestop,dest);
+        int destarget =  searchforindex(bikestop,dest);
         //std::cout << "desttarget" << destarget << std::endl;
         double result =  bikepathrouter->FindShortestPath(srctarget, destarget, path3);
         
         for (auto index : path3) {
-            tempPath.push_back(stops[index]->NodeID());
+            tempPath.push_back(findKeyByValue(bikestop,index));
         }
         path3 = tempPath;
         return result;
     }
 
     
-    std::tuple<TNodeID, double, std::vector<TNodeID>> findNearestBusStopfromsrcAndDistance(TNodeID src, const std::vector<TNodeID>& stopsInNodeId) {
+    std::tuple<TNodeID, double, std::vector<TNodeID>> findNearestBusStopfromsrcAndDistance(TNodeID src, std::unordered_map<TNodeID, int> stopsinnodeid) {
         TNodeID nearestStopId;
         double nearestDistance = std::numeric_limits<double>::max();
         std::vector<TNodeID> nearestPath;
-
-        for (const TNodeID& stopId : stopsInNodeId) {
+        for (const auto& pair : stopsinnodeid) {
+            const TNodeID& stopId = pair.first; 
             std::vector<TNodeID> pathToCurrentBusStop;
             double currentDistance = FindShortestPath(src, stopId, pathToCurrentBusStop);
             if (currentDistance == 0.0) {
@@ -229,18 +225,18 @@ struct CDijkstraTransportationPlanner::SImplementation{
                 nearestDistance = currentDistance;
                 nearestStopId = stopId;
                 nearestPath = pathToCurrentBusStop;
-            }
+            }   
         }
-
         return std::make_tuple(nearestStopId, nearestDistance, nearestPath);
     }
 
-    std::tuple<TNodeID, double, std::vector<TNodeID>> findNearestBusStopfromdestAndDistance(TNodeID dest, const std::vector<TNodeID>& stopsInNodeId) {
-        TNodeID nearestStopId;
+    std::tuple<TNodeID, double, std::vector<TNodeID>> findNearestBusStopfromdestAndDistance(TNodeID dest, std::unordered_map<TNodeID, int> stopsinnodeid) {
+        TNodeID nearestStopId ; 
         double nearestDistance = std::numeric_limits<double>::max();
         std::vector<TNodeID> nearestPath;
 
-        for (const TNodeID& stopId : stopsInNodeId) {
+        for (auto pair : stopsinnodeid) {
+            const TNodeID& stopId = pair.first; 
             std::vector<TNodeID> pathToCurrentBusStop;
             double currentDistance = FindShortestPath(stopId, dest, pathToCurrentBusStop);
             if (currentDistance == 0.0) {
@@ -253,8 +249,7 @@ struct CDijkstraTransportationPlanner::SImplementation{
                 nearestPath = pathToCurrentBusStop;
             }
         }
-
-    return std::make_tuple(nearestStopId, nearestDistance, nearestPath);
+        return std::make_tuple(nearestStopId, nearestDistance, nearestPath);
     }
     
     
