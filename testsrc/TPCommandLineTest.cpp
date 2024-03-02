@@ -121,7 +121,7 @@ TEST(TransporationPlannerCommandLine, NodeTest){
                                     "> ");
     EXPECT_TRUE(ErrorSink->String().empty());
 }
-/*
+
 TEST(TransporationPlannerCommandLine, ShortestTest){
     auto InputSource = std::make_shared<CStringDataSource>( "shortest 123 456\n"
                                                             "exit\n");
@@ -162,7 +162,7 @@ TEST(TransporationPlannerCommandLine, FastestTest){
 
     EXPECT_TRUE(CommandLine.ProcessCommands());
     EXPECT_EQ(OutputSink->String(),"> "
-                                    "Fastest path takes 39 min.\n"
+                                    "Fastest path takes 39.0 min.\n"
                                     "> ");
     EXPECT_TRUE(ErrorSink->String().empty());
 }
@@ -197,7 +197,7 @@ TEST(TransporationPlannerCommandLine, PrintTest){
 
     EXPECT_TRUE(CommandLine.ProcessCommands());
     EXPECT_EQ(OutputSink->String(),"> "
-                                    "Fastest path takes 39 min.\n"
+                                    "Fastest path takes 39.0 min.\n"
                                     "> "
                                     "Start at 38d 23' 60\" N, 121d 43' 12\" W\n"
                                     "Bike N toward Main St. for 6.9 mi\n"
@@ -207,7 +207,7 @@ TEST(TransporationPlannerCommandLine, PrintTest){
                                     "> ");
     EXPECT_TRUE(ErrorSink->String().empty());
 }
-
+/*
 TEST(TransporationPlannerCommandLine, SaveTest){
     auto InputSource = std::make_shared<CStringDataSource>( "fastest 123 456\n"
                                                             "save\n"

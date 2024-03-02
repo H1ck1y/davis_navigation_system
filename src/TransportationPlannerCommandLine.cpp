@@ -1,6 +1,8 @@
 #include "TransportationPlannerCommandLine.h"
 #include <queue>
 #include <iostream>
+#include <cmath>
+#include <unordered_map>
 #include "StringUtils.h"
 #include "GeographicUtils.h"
 
@@ -26,6 +28,7 @@ struct CTransportationPlannerCommandLine:: SImplementation{
         while (!buffer.empty()) {
             std::string command = buffer.front();
             buffer.pop(); 
+            std::cout << "command: " << command << std::endl;
             if (command == "exit") {
                 continue; 
             }
@@ -52,12 +55,100 @@ struct CTransportationPlannerCommandLine:: SImplementation{
                 outsink->Put('>');
                 outsink->Put(' ');
             }
+            else if (command.substr(0, 9) == "shortest "){
+                std::string first_str = "";
+                std::string second_str = "";
+                int start = 9;
+
+                for (; start < command.length(); ++start){
+                    if (command[start] == ' '){
+                        break;
+                    }
+                    first_str += command[start];
+                }
+                std::cout << "start: " << start << "\n";
+                
+                second_str = command.substr(start + 1);
+                int first = std::stoi(first_str);
+                int second = std::stoi(second_str);
+                
+                std::vector<CTransportationPlanner::TNodeID> res = {};
+                double distance = planner->FindShortestPath(first, second, res);
+                double factor = std::pow(10.0, 1);
+                distance = std::round(distance * factor) / factor;
+                std::string dis_str = std::to_string(distance);
+                std::string o_str = "";
+                start = 0;
+                for (; start < dis_str.length(); ++start){
+                    if (dis_str[start] == '.'){
+                        break;
+                    }
+                    o_str += dis_str[start];
+                }
+                o_str += dis_str.substr(start, 2);
+                outsink->Write(convertstringintovector("Shortest path is " + o_str + " mi.\n"));
+                outsink->Put('>');
+                outsink->Put(' ');
+            }
+            else if (command.substr(0, 8) == "fastest "){
+                std::string first_str = "";
+                std::string second_str = "";
+                int start = 8;
+
+                for (; start < command.length(); ++start){
+                    if (command[start] == ' '){
+                        break;
+                    }
+                    first_str += command[start];
+                }
+                std::cout << "start: " << start << "\n";
+                
+                second_str = command.substr(start + 1);
+                int first = std::stoi(first_str);
+                int second = std::stoi(second_str);
+
+                std::vector<CTransportationPlanner::TTripStep> res = {};
+                double hours = planner->FindFastestPath(first, second, res);
+                double minutes = hours * 60;
+                double factor = std::pow(10.0, 1);
+                minutes = std::round(minutes * factor) / factor;
+                std::string dis_str = std::to_string(minutes);
+                std::string o_str = "";
+                start = 0;
+                for (; start < dis_str.length(); ++start){
+                    if (dis_str[start] == '.'){
+                        break;
+                    }
+                    o_str += dis_str[start];
+                }
+                o_str += dis_str.substr(start, 2);
+                outsink->Write(convertstringintovector("Fastest path takes " + o_str + " min.\n"));
+                outsink->Put('>');
+                outsink->Put(' ');
+            }
+
+            else if (command == "print") {
+
+                std::vector<CTransportationPlanner::TTripStep> path = {};
+                std::vector< std::string > result_vector = {};
+                planner->GetPathDescription(path, result_vector);
+                std::string o_str = "";
+                for (auto string : result_vector){
+                    o_str += string;
+                    o_str += "\n";
+                }
+                outsink->Write(convertstringintovector(o_str));
+                outsink->Put('>');
+                outsink->Put(' ');
+            }
         }
  
 
    
         return true;
     }
+
+
 
 };
 
@@ -90,7 +181,7 @@ CTransportationPlannerCommandLine::CTransportationPlannerCommandLine(std::shared
           }else{currentCommand += ch;} //push the command into the buffer
         }
 
-                                                                    }
+            }
 
 
 
@@ -103,3 +194,5 @@ CTransportationPlannerCommandLine:: ~CTransportationPlannerCommandLine(){
         return DImplementation->ProcessCommands();
 
  }
+
+
