@@ -48,7 +48,7 @@ struct CTransportationPlannerCommandLine:: SImplementation{
                 int id = planner->SortedNodeByIndex(node_index)->ID();
                 auto location_pair = planner->SortedNodeByIndex(node_index)->Location();
                 std::string location = SGeographicUtils::ConvertLLToDMS(location_pair);
-                outsink->Write(convertstringintovector("Node " + node_index_str + + ": id = " + std::to_string(id) + " " + location + "\n"));
+                outsink->Write(convertstringintovector("Node " + node_index_str + + ": id = " + std::to_string(id) + " is at " + location + "\n"));
                 outsink->Put('>');
                 outsink->Put(' ');
             }
