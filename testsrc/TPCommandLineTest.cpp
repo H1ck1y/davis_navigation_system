@@ -70,7 +70,7 @@ TEST(TransporationPlannerCommandLine, HelpTest){
     EXPECT_TRUE(ErrorSink->String().empty());
 }
 
-/*
+
 TEST(TransporationPlannerCommandLine, CountTest){
     auto InputSource = std::make_shared<CStringDataSource>( "count\n"
                                                             "exit\n");
@@ -91,6 +91,7 @@ TEST(TransporationPlannerCommandLine, CountTest){
                                     "> ");
     EXPECT_TRUE(ErrorSink->String().empty());
 }
+
 
 TEST(TransporationPlannerCommandLine, NodeTest){
     auto InputSource = std::make_shared<CStringDataSource>("node 0\nexit\n");
@@ -120,7 +121,7 @@ TEST(TransporationPlannerCommandLine, NodeTest){
                                     "> ");
     EXPECT_TRUE(ErrorSink->String().empty());
 }
-
+/*
 TEST(TransporationPlannerCommandLine, ShortestTest){
     auto InputSource = std::make_shared<CStringDataSource>( "shortest 123 456\n"
                                                             "exit\n");

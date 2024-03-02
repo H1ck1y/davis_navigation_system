@@ -1,6 +1,8 @@
 #include "TransportationPlannerCommandLine.h"
 #include <queue>
 #include <iostream>
+#include "StringUtils.h"
+#include "GeographicUtils.h"
 
 struct CTransportationPlannerCommandLine:: SImplementation{
     std::shared_ptr<CDataSource> cmdsrc;
@@ -33,8 +35,23 @@ struct CTransportationPlannerCommandLine:: SImplementation{
                 outsink->Put('>');
                 outsink->Put(' ');
             }
-          
-        
+            else if (command == "count") {
+                int node_count = planner->NodeCount();
+                std::string o_string = std::to_string(node_count) + " nodes\n";
+                outsink->Write(convertstringintovector(o_string));
+                outsink->Put('>');
+                outsink->Put(' ');
+            }
+            else if (command.substr(0, 5) == "node ") {
+                std::string node_index_str = command.substr(5);
+                int node_index = std::stoi(node_index_str);
+                int id = planner->SortedNodeByIndex(node_index)->ID();
+                auto location_pair = planner->SortedNodeByIndex(node_index)->Location();
+                std::string location = SGeographicUtils::ConvertLLToDMS(location_pair);
+                outsink->Write(convertstringintovector("Node " + node_index_str + + ": id = " + std::to_string(id) + " " + location + "\n"));
+                outsink->Put('>');
+                outsink->Put(' ');
+            }
         }
  
 
