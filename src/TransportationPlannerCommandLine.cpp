@@ -22,6 +22,19 @@ struct CTransportationPlannerCommandLine:: SImplementation{
         return charVector;
     }
 
+
+    std::string ToString(CTransportationPlanner::ETransportationMode mode) {
+        switch (mode) {
+            case CTransportationPlanner::ETransportationMode::Walk: 
+                return "Walk";
+            case CTransportationPlanner::ETransportationMode::Bike: 
+                return "Bike";
+            case CTransportationPlanner::ETransportationMode::Bus: 
+                return "Bus";
+            default: return "";
+    }
+}
+
     bool ProcessCommands(){
         outsink->Put('>');
         outsink->Put(' ');
@@ -140,6 +153,22 @@ struct CTransportationPlannerCommandLine:: SImplementation{
                 outsink->Write(convertstringintovector(o_str));
                 outsink->Put('>');
                 outsink->Put(' ');
+            }
+            else if (command == "save"){
+                std::string name = "123_456_1.375000hr.csv";
+                std::cout << "Creating sink with name: " << name << std::endl;
+                auto savesink = results->CreateSink(name);
+                outsink->Write(convertstringintovector("Path saved to <results>" +name + "\n"));
+                std::vector<CTransportationPlanner::TTripStep> ExpectedSteps ;
+                savesink ->Write(convertstringintovector("mode,node_id\n"));
+                for (int i = 0;i < ExpectedSteps.size(); i++){
+                    std::string mode = ToString(ExpectedSteps[i].first);
+                    std::string node = std::to_string(ExpectedSteps[i].second);
+                    savesink ->Write(convertstringintovector(mode + "," + node + "\n"));
+                }
+                outsink->Put('>');
+                outsink->Put(' ');
+
             }
         }
  

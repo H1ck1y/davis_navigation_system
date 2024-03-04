@@ -317,6 +317,7 @@ bool CSpeedTest::RunTest(uint64_t seed, uint64_t numpoints, bool verbose){
         std::vector< CTransportationPlanner::TTripStep > &FastestPath = verbose ? DFastestPaths[Index] : TempFastestPath;
         DShortestDistance[Index] = DPlanner->FindShortestPath(SourceNodeID, DestNodeID, ShortestPath);
         DFastestTime[Index] = DPlanner->FindFastestPath(SourceNodeID, DestNodeID, FastestPath);
+        std::cout<<"finish a search"<< std::endl;
     }
     auto ProcessingDuration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-ProcessingStart);
     NotifyString("Paths found\n");

@@ -10,7 +10,7 @@ LDFLAGS = -lgmock -lgtest -lgtest_main -lpthread -lexpat
 
 all : directories runtests
 
-runtests: $(BIN_DIR)/teststrutils  $(BIN_DIR)/teststrdatasource  $(BIN_DIR)/teststrdatasink  $(BIN_DIR)/testdsv  $(BIN_DIR)/testxml  $(BIN_DIR)/testosm $(BIN_DIR)/testcsvbs $(BIN_DIR)/testfiledatass $(BIN_DIR)/testcsvbsi $(BIN_DIR)/testkml $(BIN_DIR)/testdpr $(BIN_DIR)/testtp $(BIN_DIR)/testtpcl
+runtests: $(BIN_DIR)/teststrutils  $(BIN_DIR)/teststrdatasource  $(BIN_DIR)/teststrdatasink  $(BIN_DIR)/testdsv  $(BIN_DIR)/testxml  $(BIN_DIR)/testosm $(BIN_DIR)/testcsvbs $(BIN_DIR)/testfiledatass $(BIN_DIR)/testcsvbsi $(BIN_DIR)/testkml $(BIN_DIR)/testdpr $(BIN_DIR)/testtp $(BIN_DIR)/testtpcl $(BIN_DIR)/testspeed
 	$(BIN_DIR)/teststrutils
 	$(BIN_DIR)/teststrdatasource
 	$(BIN_DIR)/teststrdatasink
@@ -24,6 +24,7 @@ runtests: $(BIN_DIR)/teststrutils  $(BIN_DIR)/teststrdatasource  $(BIN_DIR)/test
 	$(BIN_DIR)/testdpr
 	$(BIN_DIR)/testtp
 	$(BIN_DIR)/testtpcl
+	$(BIN_DIR)/testspeed
 	
 
 
@@ -69,7 +70,8 @@ $(BIN_DIR)/testtpcl: $(OBJ_DIR)/TransportationPlannerCommandLine.o $(OBJ_DIR)/TP
 	$(CXX) -o $(BIN_DIR)/testtpcl $(CXXFLAGS) $(OBJ_DIR)/TransportationPlannerCommandLine.o $(OBJ_DIR)/TPCommandLineTest.o $(OBJ_DIR)/StringUtils.o $(OBJ_DIR)/DSVReader.o $(OBJ_DIR)/XMLReader.o $(OBJ_DIR)/StringDataSource.o $(OBJ_DIR)/StringDataSink.o $(OBJ_DIR)/OpenStreetMap.o $(OBJ_DIR)/CSVBusSystem.o $(OBJ_DIR)/DijkstraTransportationPlanner.o  $(OBJ_DIR)/DijkstraPathRouter.o $(OBJ_DIR)/GeographicUtils.o $(OBJ_DIR)/BusSystemIndexer.o $(LDFLAGS)
 
 
-
+$(BIN_DIR)/testspeed: $(OBJ_DIR)/speedtest.o  $(OBJ_DIR)/StandardDataSink.o $(OBJ_DIR)/StandardDataSource.o $(OBJ_DIR)/StandardErrorDataSink.o $(OBJ_DIR)/StringUtils.o $(OBJ_DIR)/StringDataSource.o $(OBJ_DIR)/StringDataSink.o $(OBJ_DIR)/DSVWriter.o $(OBJ_DIR)/DSVReader.o $(OBJ_DIR)/XMLWriter.o $(OBJ_DIR)/XMLReader.o $(OBJ_DIR)/OpenStreetMap.o $(OBJ_DIR)/CSVBusSystem.o $(OBJ_DIR)/FileDataSource.o $(OBJ_DIR)/FileDataSink.o $(OBJ_DIR)/FileDataFactory.o $(OBJ_DIR)/BusSystemIndexer.o $(OBJ_DIR)/DijkstraPathRouter.o $(OBJ_DIR)/GeographicUtils.o $(OBJ_DIR)/DijkstraTransportationPlanner.o
+	$(CXX) -o $(BIN_DIR)/testspeed $(CXXFLAGS) $(OBJ_DIR)/speedtest.o $(OBJ_DIR)/StandardDataSink.o $(OBJ_DIR)/StandardDataSource.o $(OBJ_DIR)/StandardErrorDataSink.o $(OBJ_DIR)/StringUtils.o $(OBJ_DIR)/StringDataSource.o $(OBJ_DIR)/StringDataSink.o $(OBJ_DIR)/DSVWriter.o $(OBJ_DIR)/DSVReader.o $(OBJ_DIR)/XMLWriter.o $(OBJ_DIR)/XMLReader.o $(OBJ_DIR)/OpenStreetMap.o $(OBJ_DIR)/CSVBusSystem.o $(OBJ_DIR)/FileDataSource.o $(OBJ_DIR)/FileDataSink.o $(OBJ_DIR)/FileDataFactory.o $(OBJ_DIR)/BusSystemIndexer.o $(OBJ_DIR)/DijkstraPathRouter.o $(OBJ_DIR)/GeographicUtils.o $(OBJ_DIR)/DijkstraTransportationPlanner.o $(LDFLAGS)
 
 
 
@@ -199,6 +201,17 @@ $(OBJ_DIR)/TransportationPlannerCommandLine.o: $(SRC_DIR)/TransportationPlannerC
 $(OBJ_DIR)/TPCommandLineTest.o: $(TEST_SRC_DIR)/TPCommandLineTest.cpp $(INC_DIR)/TransportationPlannerCommandLine.h $(INC_DIR)/StringDataSink.h $(INC_DIR)/StringDataSource.h
 	$(CXX) -o $(OBJ_DIR)/TPCommandLineTest.o -c $(CXXFLAGS) $(TEST_SRC_DIR)/TPCommandLineTest.cpp
 
+$(OBJ_DIR)/StandardDataSink.o: $(SRC_DIR)/StandardDataSink.cpp $(INC_DIR)/StandardDataSink.h
+	$(CXX) -o $(OBJ_DIR)/StandardDataSink.o -c $(CXXFLAGS) $(SRC_DIR)/StandardDataSink.cpp
+
+$(OBJ_DIR)/StandardDataSource.o: $(SRC_DIR)/StandardDataSource.cpp $(INC_DIR)/StandardDataSource.h
+	$(CXX) -o $(OBJ_DIR)/StandardDataSource.o -c $(CXXFLAGS) $(SRC_DIR)/StandardDataSource.cpp
+
+$(OBJ_DIR)/StandardErrorDataSink.o: $(SRC_DIR)/StandardErrorDataSink.cpp $(INC_DIR)/StandardErrorDataSink.h
+	$(CXX) -o $(OBJ_DIR)/StandardErrorDataSink.o -c $(CXXFLAGS) $(SRC_DIR)/StandardErrorDataSink.cpp
+
+$(OBJ_DIR)/speedtest.o: $(SRC_DIR)/speedtest.cpp   $(INC_DIR)/TransportationPlannerConfig.h $(INC_DIR)/DijkstraTransportationPlanner.h $(INC_DIR)/OpenStreetMap.h $(INC_DIR)/CSVBusSystem.h $(INC_DIR)/FileDataFactory.h $(INC_DIR)/StandardDataSource.h $(INC_DIR)/StandardDataSink.h $(INC_DIR)/StandardErrorDataSink.h $(INC_DIR)/StringUtils.h
+	$(CXX) -o $(OBJ_DIR)/speedtest.o -c $(CXXFLAGS) $(SRC_DIR)/speedtest.cpp
 
 directories:
 	mkdir -p  $(OBJ_DIR)
