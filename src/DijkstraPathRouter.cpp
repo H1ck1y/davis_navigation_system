@@ -1,19 +1,26 @@
 #include "DijkstraPathRouter.h"
 #include <map>
 #include <unordered_map>
-#include <set>
+#include <queue>
 #include <algorithm>
 
-struct CDijkstraPathRouter:: SImplementation{
+struct CDijkstraPathRouter:: SImplementation{ // use the adjacentlists to represent the graph
     struct vertex{
         std::any attribute;
         std::map <TVertexID, double>  adjlist;
     };
 
     std::map <TVertexID, vertex> vertices;
+        
+    struct Pri { // define a self comparison for priority queue
+        bool operator()(const std::pair<double, TVertexID>& a, 
+                        const std::pair<double, TVertexID>& b) const {
+            return a.first > b.first;
+        }
+    };
 
 
-    TVertexID AddVertex(std::any tag) noexcept{
+    TVertexID AddVertex(std::any tag) noexcept{// add attributes into the graph
         vertex new_vertex;
         new_vertex.attribute = tag;
         TVertexID new_vertexid = vertices.size();
@@ -23,7 +30,7 @@ struct CDijkstraPathRouter:: SImplementation{
      
 
     std::any GetVertexTag(CDijkstraPathRouter::TVertexID id) const noexcept{
-        auto target_vertex = vertices.find(id);
+        auto target_vertex = vertices.find(id); // check the attributes in the addge
         if( target_vertex != vertices.end()) {
             return target_vertex->second.attribute;
         }
@@ -33,64 +40,65 @@ struct CDijkstraPathRouter:: SImplementation{
     bool AddEdge(CDijkstraPathRouter::TVertexID src, CDijkstraPathRouter::TVertexID dest, double weight, bool bidir) noexcept{
         if (dest == InvalidVertexID || src == InvalidVertexID || weight < 0){
             return false;
-        }
+        }    // achieve this by addding nodes into the adjacent lists
         if (vertices.find(src) == vertices.end() || vertices.find(dest) == vertices.end()) {
             return false;
         }
         vertices[src].adjlist[dest] = weight;
-        if (bidir == true){
+        if (bidir == true){ // if we need to add in both directions then add the edge
            vertices[dest].adjlist[src] = weight;
         }
         return true;
     }
 
-    double FindShortestPath(TVertexID src, TVertexID dest, std::vector<TVertexID> &path) noexcept{//https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+    double FindShortestPath(TVertexID src, TVertexID dest, std::vector<TVertexID> &path) noexcept{
+        //https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+        //https://stackoverflow.com/questions/17898342/priority-queue-in-dijkstras-algorithm
         std::unordered_map<TVertexID, double> dist;
         std::unordered_map<TVertexID, TVertexID> prev;
-        std::set<std::pair<double, TVertexID>> Q;
+        std::priority_queue<std::pair<double, TVertexID>, 
+                            std::vector<std::pair<double, TVertexID>>, 
+                            Pri> Q;
+
         const double INFINITY = std::numeric_limits<double>::infinity();
-        for (auto i = vertices.begin(); i != vertices.end(); ++i){
-            dist[i->first] = INFINITY;
-            prev[i->first] = InvalidVertexID;
-            Q.insert({INFINITY, i->first});// add v to Q
+        for (const auto& vertex_pair : vertices) {
+            dist[vertex_pair.first] = INFINITY;
+            prev[vertex_pair.first] = InvalidVertexID;
         }
+        dist[src] = 0;
+        Q.push({0, src});
+        while (!Q.empty()) {
+            TVertexID u = Q.top().second;
+            Q.pop();
 
-        dist[src] = 0; //dist[source] ← 0
-        Q.insert({0, src}); 
+            if (u == dest) {
+                break;
+            }
 
-        while (!Q.empty()){
-            TVertexID u = Q.begin()->second;
-            Q.erase(Q.begin());
-            if (u == dest) break;
-
-            for (auto edge = vertices.at(u).adjlist.begin(); edge != vertices.at(u).adjlist.end(); ++edge){
-                TVertexID v = edge->first; 
-                double weight = edge->second; 
+            for (const auto& edge : vertices.at(u).adjlist) {
+                TVertexID v = edge.first;
+                double weight = edge.second;
                 double alt = dist[u] + weight;
+
                 if (alt < dist[v]) {
-                    Q.erase({dist[v], v}); 
                     dist[v] = alt;
                     prev[v] = u;
-                    Q.insert({dist[v], v});
+                    Q.push({alt, v});
                 }
-
             }
         }
-    path.clear();
-    TVertexID current = dest;
-    if (dist[current] == INFINITY) {
-        return INFINITY; 
-    }
+        path.clear();
+        TVertexID current = dest;
+        if (dist[current] == INFINITY) {
+            return INFINITY;
+        }
+        while (current != InvalidVertexID) {
+            path.push_back(current);
+            current = prev[current];
+        }
+        std::reverse(path.begin(), path.end());
 
-    while (current != InvalidVertexID) {
-        path.push_back(current);
-        if (current == src) break;
-        current = prev[current];
-    }
-    std::reverse(path.begin(), path.end());
-
-    return dist[dest];
-    
+        return dist[dest];
     }
     
 };
