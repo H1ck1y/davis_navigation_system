@@ -1998,6 +1998,6 @@
 998 FP:(36:31)
 999 SP:(3.2 mi)
 999 FP:(24:01)
-Duration (load): 10243
-Duration (proc): 72928
-Queries per day: 1184589 (+-37459), 1147130 min
+Duration (load): 10161
+Duration (proc): 72435
+Queries per day: 1192653 (+-37714), 1154939 min
