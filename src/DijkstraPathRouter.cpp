@@ -12,7 +12,7 @@ struct CDijkstraPathRouter:: SImplementation{ // use the adjacentlists to repres
 
     std::map <TVertexID, vertex> vertices;
         
-    struct Pri { // define a self comparison for priority queue
+    struct Pri { // define a self comparison for priority queue  
         bool operator()(const std::pair<double, TVertexID>& a, 
                         const std::pair<double, TVertexID>& b) const {
             return a.first > b.first;
@@ -58,7 +58,7 @@ struct CDijkstraPathRouter:: SImplementation{ // use the adjacentlists to repres
         std::unordered_map<TVertexID, TVertexID> prev;
         std::priority_queue<std::pair<double, TVertexID>, 
                             std::vector<std::pair<double, TVertexID>>, 
-                            Pri> Q;
+                            Pri> Q; // priority uses heap to generate the path
 
         const double INFINITY = std::numeric_limits<double>::infinity();
         for (const auto& vertex_pair : vertices) {
@@ -67,7 +67,7 @@ struct CDijkstraPathRouter:: SImplementation{ // use the adjacentlists to repres
         }
         dist[src] = 0;
         Q.push({0, src});
-        while (!Q.empty()) {
+        while (!Q.empty()) { //irretation until the queue is empty
             TVertexID u = Q.top().second;
             Q.pop();
 
@@ -80,7 +80,7 @@ struct CDijkstraPathRouter:: SImplementation{ // use the adjacentlists to repres
                 double weight = edge.second;
                 double alt = dist[u] + weight;
 
-                if (alt < dist[v]) {
+                if (alt < dist[v]) { // keep updating the shortest based on the previous shortest path
                     dist[v] = alt;
                     prev[v] = u;
                     Q.push({alt, v});
@@ -92,7 +92,7 @@ struct CDijkstraPathRouter:: SImplementation{ // use the adjacentlists to repres
         if (dist[current] == INFINITY) {
             return INFINITY;
         }
-        while (current != InvalidVertexID) {
+        while (current != InvalidVertexID) { // use the traceback array to generate the result
             path.push_back(current);
             current = prev[current];
         }

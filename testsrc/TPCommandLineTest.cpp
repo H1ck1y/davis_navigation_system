@@ -207,7 +207,7 @@ TEST(TransporationPlannerCommandLine, PrintTest){
                                     "> ");
     EXPECT_TRUE(ErrorSink->String().empty());
 }
-/*
+
 TEST(TransporationPlannerCommandLine, SaveTest){
     auto InputSource = std::make_shared<CStringDataSource>( "fastest 123 456\n"
                                                             "save\n"
@@ -234,7 +234,7 @@ TEST(TransporationPlannerCommandLine, SaveTest){
 
     EXPECT_TRUE(CommandLine.ProcessCommands());
     EXPECT_EQ(OutputSink->String(),"> "
-                                    "Fastest path takes 1 hr 22 min 30 sec.\n"
+                                    "Fastest path takes 82.5 min.\n"
                                     "> "
                                     "Path saved to <results>/123_456_1.375000hr.csv\n"
                                     "> ");
@@ -246,7 +246,7 @@ TEST(TransporationPlannerCommandLine, SaveTest){
                                  "Walk,6");
     EXPECT_TRUE(ErrorSink->String().empty());
 }
-/*
+
 TEST(TransporationPlannerCommandLine, ErrorTest){
     auto InputSource = std::make_shared<CStringDataSource>( "foo\n"
                                                             "node\n"
@@ -290,4 +290,5 @@ TEST(TransporationPlannerCommandLine, ErrorTest){
                                     "Invalid fastest parameter, see help.\n"
                                     "No valid path to save, see help.\n"
                                     "No valid path to print, see help.\n");
-} */
+
+} 
