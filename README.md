@@ -2,6 +2,7 @@
 Student1: Partner1 Name: Yihan Diao 920885648 Student2: Partner2 Name: Yifan Cui 919921542
 # known issues
 I disabled tests for kmltest. File are provided by professor. I think it fails because we develop xmlwriter in different ways
+in command linetest change 1h 22 min 30s -> 82.5 min 
 
 # code references
 1.https://stackoverflow.com/questions/2758080/how-to-sort-an-stl-vector(sort the value in the unorderedmap)
