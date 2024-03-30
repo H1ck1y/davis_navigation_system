@@ -1,9 +1,6 @@
 # ECS34P4
 Student1: Partner1 Name: Yihan Diao 920885648 Student2: Partner2 Name: Yifan Cui 919921542
-# known issues
-## I disabled tests for kmltest.  I think it fails because of the xmlwriter.
-## in command linetest change 1h 22 min 30s -> 82.5 min 
-## engineers fail to figure out transplanner(want to take a rest)
+
 
 # code references
 1.https://stackoverflow.com/questions/2758080/how-to-sort-an-stl-vector(sort the value in the unorderedmap)
