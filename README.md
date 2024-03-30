@@ -1,4 +1,4 @@
-# ECS34P4
+# winter - project
 Student1: Partner1 Name: Yihan Diao 920885648 Student2: Partner2 Name: Yifan Cui 919921542
 
 
